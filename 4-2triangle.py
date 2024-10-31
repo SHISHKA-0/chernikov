@@ -12,9 +12,11 @@ try:
     while True:
         for i in range(0, 256):
             GPIO.output(dac, decimal2binary(i))
+            print(i,"Напряжение ",'\n', "{:.4f}".format(3.3*i/256))
             sleep(t / 512)
         for i in range(0,256):
             GPIO.output(dac, decimal2binary(255-i))
+            print(255-i,"Напряжение ",'\n', "{:.4f}".format(3.3*(255-i)/256))
             sleep(t / 512)
 finally:
     GPIO.output(dac, 0)
