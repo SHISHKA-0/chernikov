@@ -1,0 +1,44 @@
+clear
+fd = 44100;
+x_low = audioread('nizko.wav');
+x_high = audioread('visoko.wav');
+t_high = (0:length(x_high)-1)/fd;
+t_low = (0:length(x_low)-1)/fd;
+
+subplot(2,1,1);
+plot(t_high, x_high); 
+
+subplot(2,1,2);
+plot(t_low, x_low); 
+%%
+X_high = fft(x_high);
+X_low = fft(x_low);
+f_high = (0:length(X_high)-1)*fd/length(X_high);
+f_low = (0:length(X_low)-1)*fd/length(X_low);
+
+subplot(2,1,1);
+plot(f_high, abs(X_high)); 
+xlim([0 1000]);
+
+subplot(2,1,2);
+plot(f_low, abs(X_low)); 
+xlim([0 1000]);
+%% 
+m_low = main_fr(X_low, 100)
+m_high = main_fr(X_high, 100)
+%%
+y_high = noise_filter(X_high, 20);
+y_low = noise_filter(X_low, 18);
+filt_high = ifft(y_high);
+filt_low = ifft(y_low);
+%%
+sound(x_high, fd);
+%%
+sound(filt_high, fd);
+%% 
+sound(x_low, fd);
+%%
+sound(filt_low, fd);
+%%
+audiowrite('filter_visoko.wav', filt_high, fd);
+audiowrite('filter_nizko.wav', filt_low, fd);
