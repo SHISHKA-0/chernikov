@@ -1,0 +1,80 @@
+% Временные области
+t_high = (0:length(x_high)-1)/fs;
+t_low = (0:length(x_low)-1)/fs;
+
+figure;
+subplot(2,1,1);
+plot(t_high, x_high); 
+title('Высокий тон: временной сигнал');
+xlabel('Время (с)');
+
+subplot(2,1,2);
+plot(t_low, x_low); 
+title('Низкий тон: временной сигнал');
+xlabel('Время (с)');
+
+% Спектры
+X_high = fft(x_high);
+X_low = fft(x_low);
+f_high = (0:length(X_high)-1)*fs/length(X_high);
+f_low = (0:length(X_low)-1)*fs/length(X_low);
+
+figure;
+subplot(2,1,1);
+plot(f_high, abs(X_high)); 
+title('Спектр высокого тона');
+xlim([0 1000]);
+
+subplot(2,1,2);
+plot(f_low, abs(X_low)); 
+title('Спектр низкого тона');
+xlim([0 1000]);
+%%
+% Для высокого тона
+p = 0.2; % Порог амплитуды
+m_high = main_fr(x_high, p);
+main_freq_high = m_high(1, 1); % Основная частота (Гц)
+
+% Для низкого тона
+m_low = main_fr(x_low, p);
+main_freq_low = m_low(1, 1);
+%%
+% Фильтрация
+p_filter = 0.05; % Порог
+y_high = noise_filter(x_high, p_filter);
+y_low = noise_filter(x_low, p_filter);
+%%
+Y_high = fft(y_high);
+y_high_time = ifft(Y_high);
+%%
+sound(x_high, fs); % Исходный
+sound(y_high_time, fs); % Отфильтрованный
+%%
+audiowrite('original_high.wav', x_high, fs);
+audiowrite('filtered_high.wav', y_high_time, fs);
+%%
+function freq = main_fr(x, threshold)
+    % x — входной сигнал
+    % threshold — порог (доля от максимума), напр. 0.2
+    X = abs(fft(x));
+    N = length(X);
+    X = X(1:floor(N/2)); % Оставляем только положительные частоты
+    X = X / max(X); % Нормализация
+
+    fs = 44100; % Частота дискретизации, можно передавать как аргумент
+    f = (0:length(X)-1) * fs / (2*length(X));
+
+    % Находим пики, выше порога
+    idx = find(X > threshold);
+    freq = [f(idx)', X(idx)']; % Возвращаем частоты и амплитуды
+end
+%%
+function y = noise_filter(x, threshold)
+    % Преобразование Фурье
+    X = fft(x);
+    mag = abs(X);
+    % Обнуляем "шумовые" компоненты
+    X(mag < threshold * max(mag)) = 0;
+    % Обратное Фурье
+    y = real(ifft(X));
+end
