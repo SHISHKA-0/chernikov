@@ -1,4 +1,30 @@
-% Временные области
+%---------------------------------------------------------
+
+sound(x_high, fs); 
+sound(y_high_time, fs);
+
+%---------------------------------------------------------
+
+Y_high = fft(y_high);
+y_high_time = ifft(Y_high);
+
+%---------------------------------------------------------
+
+p_filter = 0.05; 
+y_high = noise_filter(x_high, p_filter);
+y_low = noise_filter(x_low, p_filter);
+
+%---------------------------------------------------------
+
+p = 0.2;
+m_high = main_fr(x_high, p);
+main_freq_high = m_high(1, 1);
+
+m_low = main_fr(x_low, p);
+main_freq_low = m_low(1, 1);
+
+%---------------------------------------------------------
+
 t_high = (0:length(x_high)-1)/fs;
 t_low = (0:length(x_low)-1)/fs;
 
@@ -13,7 +39,6 @@ plot(t_low, x_low);
 title('Низкий тон: временной сигнал');
 xlabel('Время (с)');
 
-% Спектры
 X_high = fft(x_high);
 X_low = fft(x_low);
 f_high = (0:length(X_high)-1)*fs/length(X_high);
@@ -29,30 +54,9 @@ subplot(2,1,2);
 plot(f_low, abs(X_low)); 
 title('Спектр низкого тона');
 xlim([0 1000]);
-%%
-% Для высокого тона
-p = 0.2; % Порог амплитуды
-m_high = main_fr(x_high, p);
-main_freq_high = m_high(1, 1); % Основная частота (Гц)
 
-% Для низкого тона
-m_low = main_fr(x_low, p);
-main_freq_low = m_low(1, 1);
-%%
-% Фильтрация
-p_filter = 0.05; % Порог
-y_high = noise_filter(x_high, p_filter);
-y_low = noise_filter(x_low, p_filter);
-%%
-Y_high = fft(y_high);
-y_high_time = ifft(Y_high);
-%%
-sound(x_high, fs); % Исходный
-sound(y_high_time, fs); % Отфильтрованный
-%%
-audiowrite('original_high.wav', x_high, fs);
-audiowrite('filtered_high.wav', y_high_time, fs);
-%%
+%---------------------------------------------------------
+
 function freq = main_fr(x, threshold)
     % x — входной сигнал
     % threshold — порог (доля от максимума), напр. 0.2
